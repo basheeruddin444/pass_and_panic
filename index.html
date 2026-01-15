@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>ULTIMATE PASS & PANIC</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<!-- FIXED VIEWPORT - Changed from maximum-scale=1 to maximum-scale=5 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
 <meta name="theme-color" content="#ff0033">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,6 +12,47 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 <style>
+/* ========== SCROLLING FIXES ========== */
+html, body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+}
+
+/* Enable scrolling on all screens */
+.screen {
+    display: none;
+    min-height: 100vh;
+    padding: 80px 20px 80px;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    animation: fadeIn 0.4s ease;
+    overflow-y: auto !important; /* Added for scrolling */
+    -webkit-overflow-scrolling: touch !important; /* Smooth iOS scrolling */
+    width: 100%;
+}
+
+/* Fix scrollable containers */
+.players-list-container, .scoreboard-container, .settings-container, .setup-container {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+.players-list-container {
+    max-height: 250px !important;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Prevent pull-to-refresh in APK */
+body {
+    overscroll-behavior-y: contain;
+}
+
+/* ========== ORIGINAL CSS ========== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 button, input, select { touch-action: manipulation; cursor: pointer; font-family: inherit; }
 button:focus, input:focus { outline: none; }
@@ -202,19 +244,6 @@ body {
 }
 
 /* ---------- SCREENS ---------- */
-.screen {
-    display: none;
-    min-height: 100vh;
-    padding: 80px 20px 80px;
-    justify-content: flex-start;
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
-    animation: fadeIn 0.4s ease;
-    overflow-y: auto;
-    width: 100%;
-}
-
 .screen.active { 
     display: flex; 
 }
@@ -482,7 +511,6 @@ body {
     width: 100%;
     margin-top: 25px;
     max-height: 250px;
-    overflow-y: auto;
     border-radius: 15px;
     background: rgba(0, 0, 0, 0.2);
     padding: 15px;
@@ -794,7 +822,6 @@ body {
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(20px);
     max-height: 70vh;
-    overflow-y: auto;
 }
 
 .scoreboard-title {
@@ -1441,6 +1468,44 @@ input:checked + .slider:before {
 </div>
 
 <script>
+// Add scrolling fix JavaScript at the beginning
+function enableMobileScrolling() {
+    // Enable touch scrolling
+    document.body.style.overflow = 'auto';
+    document.body.style.webkitOverflowScrolling = 'touch';
+    
+    // Enable scrolling on all screens
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.style.overflowY = 'auto';
+        screen.style.webkitOverflowScrolling = 'touch';
+    });
+    
+    // Prevent default touch behaviors that might interfere
+    document.addEventListener('touchmove', function(e) {
+        if (e.target.closest('.players-list-container') || 
+            e.target.closest('.scoreboard-container') ||
+            e.target.closest('.settings-container') ||
+            e.target.closest('.setup-container')) {
+            return; // Allow scrolling in these containers
+        }
+    }, { passive: true });
+    
+    console.log('Mobile scrolling enabled');
+}
+
+// Call scrolling fix on page load
+window.addEventListener('DOMContentLoaded', function() {
+    enableMobileScrolling();
+    
+    // Also call it whenever screen changes
+    const originalNavigateTo = window.navigateTo;
+    window.navigateTo = function(screenId) {
+        if (originalNavigateTo) originalNavigateTo(screenId);
+        setTimeout(enableMobileScrolling, 100);
+    };
+});
+
+// ========== YOUR ORIGINAL JAVASCRIPT CODE CONTINUES BELOW ==========
 // Enhanced Game State
 const gameState = {
     players: [],
